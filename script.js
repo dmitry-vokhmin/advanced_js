@@ -1,22 +1,3 @@
-class Basket {
-    constructor() {
-    }
-
-    totalCost() {
-
-    }
-
-    order() {
-
-    }
-
-    render() {
-
-    }
-
-}
-
-
 class BasketItem {
     constructor() {
     }
@@ -30,10 +11,81 @@ class BasketItem {
     }
 }
 
+const API_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses'
+
+function makeGETRequest(url) {
+    return new Promise((resolve, reject) => {
+        var xhr;
+
+        if (window.XMLHttpRequest) {
+            xhr = new XMLHttpRequest();
+        } else if (window.ActiveXObject) {
+            xhr = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                resolve(xhr.responseText);
+            } else if (xhr.readyState === 4 && xhr.status !== 200) {
+                reject(xhr.status);
+            }
+        }
+
+        xhr.open('GET', url, true);
+        xhr.send();
+    })
+}
+
+class Basket {
+    constructor() {
+        this.basket = [];
+    }
+
+    getInitialItems() {
+        makeGETRequest(`${API_URL}/getBasket.json`)
+            .then((goods) => {
+                this.basket = JSON.parse(goods);
+            })
+            .then(() => {
+                this.showBasket();
+            })
+            .catch((error) => {
+                console.log(error)
+            });
+    }
+
+    addItem(item) {
+        this.basket.push(item);
+    }
+
+    deleteItem(item) {
+        this.basket.splice(this.basket.indexOf(item), 1);
+    }
+
+    showBasket() {
+        console.log(JSON.stringify(this.basket));
+    }
+
+    totalCost() {
+        let cost = this.basket.reduce((acc, elem) => {
+            return acc + elem.price
+        }, 0)
+        if (cost) {
+            document.querySelector(".cart-button").innerText = `Total: ${cost}$ in Cart`
+        } else {
+            document.querySelector(".cart-button").innerText = "Cart"
+        }
+    }
+
+    render() {
+
+    }
+
+}
 
 class GoodsItem {
-    constructor(title, price) {
-        this.title = title;
+    constructor(product_name, price) {
+        this.product_name = product_name;
         this.price = price;
     }
 
@@ -41,9 +93,9 @@ class GoodsItem {
         return `<div class="card">
             <img src="img/default_image_product.png" class="card-img-top" alt="product">
             <div class="card-body">
-                <h5 class="card-title">${this.title}</h5>
+                <h5 class="card-title">${this.product_name}</h5>
                 <p class="card-text">Price: ${this.price}$</p>
-                <a href="#" class="btn btn-primary">Add to cart</a>
+                <a class="btn btn-primary">Add to cart</a>
             </div>
       </div>`;
     }
@@ -55,37 +107,29 @@ class GoodsList {
     }
 
     fetchGoods() {
-        this.goods = [
-            {title: 'Shirt', price: 150},
-            {title: 'Socks', price: 50},
-            {title: 'Jacket', price: 350},
-            {title: 'Shoes', price: 250},
-        ];
+        return makeGETRequest(`${API_URL}/catalogData.json`);
     }
 
     render() {
         let listHtml = '';
-        this.goods.forEach(good => {
-            const goodItem = new GoodsItem(good.title, good.price);
+        this.goods.forEach((good, index) => {
+            const goodItem = new GoodsItem(good.product_name, good.price, index);
             listHtml += goodItem.render();
         });
         document.querySelector(".goods-list").innerHTML = listHtml;
     }
-
-    totalCost() {
-        let cost = this.goods.reduce((acc, elem) => {
-            return acc + elem.price
-        }, 0)
-        if (cost) {
-            document.querySelector(".cart-button").innerText = `Total: ${cost}$ in Cart`
-        }
-        else {
-            document.querySelector(".cart-button").innerText = "Cart"
-        }
-    }
 }
 
 const list = new GoodsList();
-list.fetchGoods();
-list.render();
-list.totalCost();
+const basket = new Basket();
+list.fetchGoods()
+    .then((goods) => {
+        list.goods = JSON.parse(goods);
+        list.render();
+    })
+    .then(() => {
+        basket.getInitialItems();
+    })
+    .catch((error) => {
+        console.log(error)
+    });
