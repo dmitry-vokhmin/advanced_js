@@ -1,5 +1,5 @@
 .justify-content-start {
-    justify-content: flex-end!important;
+    justify-content: flex-end !important;
 }
 
 .goods-list {
@@ -12,4 +12,12 @@
     margin-right: 20px;
     margin-top: 20px;
     width: 18rem;
+}
+
+.goods-search {
+    margin-right: .5rem !important;
+    border: 0.5px solid #198754;
+    border-radius: .25rem;
+    padding: .375rem .75rem;
+    outline: none;
 }
