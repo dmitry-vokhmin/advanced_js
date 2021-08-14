@@ -94,7 +94,7 @@ class GoodsItem {
 
     render() {
         return `<div class="card">
-            <img src="img/default_image_product.png" class="card-img-top" alt="product">
+            <img src="../img/default_image_product.png" class="card-img-top" alt="product">
             <div class="card-body">
                 <h5 class="card-title">${this.product_name}</h5>
                 <p class="card-text">Price: ${this.price}$</p>

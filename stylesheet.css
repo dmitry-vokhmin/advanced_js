@@ -3,6 +3,7 @@
 }
 
 .goods-list {
+    flex-grow: 1;
     display: flex;
     flex-wrap: wrap;
     padding: 0 20px;
@@ -21,3 +22,26 @@
     padding: .375rem .75rem;
     outline: none;
 }
+
+.container_cart {
+    display: flex;
+}
+
+.shopping_cart {
+    display: flex;
+    flex-direction: column;
+    margin: 20px;
+    padding: 10px;
+    border-radius: .25rem;
+    border: 1px solid rgba(0, 0, 0, .125);
+}
+
+.del_btn {
+    border: 1px solid transparent;
+    border-radius: .25rem;
+}
+
+.table_container {
+    flex-grow: 1;
+}
+
