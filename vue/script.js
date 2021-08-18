@@ -1,5 +1,71 @@
 const API_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses';
 
+Vue.component("basket", {
+    props: ["isVisible", "cart", "totalPrice"],
+    template: `
+            <div class="shopping_cart" v-show="isVisible">
+                <div class="table_container">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Item</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Delete</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(item, index) in cart">
+                            <th scope="row">{{ index + 1 }}</th>
+                            <td>{{ item.product_name }}</td>
+                            <td>{{ item.price }}$</td>
+                            <td>
+                                <button class="del_btn btn-primary" @click="$emit('remove-item', index)">Delete</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p v-show="totalPrice">Total price: {{ totalPrice }}$</p>
+            </div>
+    `
+})
+
+Vue.component("search", {
+    props: ['searchLine'],
+    template: `
+        <div>
+            <input type="text" class="goods-search" v-bind:value="searchLine" v-on:input="$emit('input', $event.target.value)">
+            <button class="search-button cart-button btn btn-outline-success me-2" type="button"
+                    @click="$emit('filter-goods')">Искать
+            </button>
+        </div>
+    `
+})
+
+Vue.component("goods-list", {
+    props: ['goods', 'addFunk'],
+    template: `
+       <div class="goods-list">
+        <goods-item v-for="good in goods" :good="good" @add-item="addFunk"></goods-item>
+       </div>
+    `
+});
+
+Vue.component("goods-item", {
+    props: ["good"],
+    template: `
+        <div class="card">
+            <img src="../img/default_image_product.png" class="card-img-top" alt="product">
+            <div class="card-body">
+                <h5 class="card-title">{{ good.product_name }}</h5>
+                <p class="card-text">Price: {{ good.price }}</p>
+                <a class="btn btn-primary" @click="$emit('add-item', good)">Add to cart</a>
+            </div>
+        </div>
+    `
+});
+
 const app = new Vue({
     el: '#app',
     data: {
@@ -38,16 +104,13 @@ const app = new Vue({
             this.filteredGoods = this.goods.filter(good =>
                 regexp.test(good.product_name));
         },
-        showCart() {
-            this.isVisibleCart = !this.isVisibleCart;
+        addItem(item) {
+            this.cart.push(item)
+            this.totalPrice += item.price
         },
-        addItem: function (index) {
-            this.cart.push(this.filteredGoods[index])
-            this.totalPrice += this.filteredGoods[index].price
-        },
-        removeItem: function (index) {
+        removeItem(index) {
             this.totalPrice -= this.cart[index].price
-            this.cart.splice(index, 1);
+            this.cart = [...this.cart.slice(0, index), ...this.cart.slice(index + 1)];
         }
     },
     mounted() {

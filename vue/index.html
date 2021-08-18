@@ -13,11 +13,8 @@
     <header>
         <nav class="navbar navbar-light bg-light">
             <form class="container-fluid justify-content-start">
-                <input type="text" class="goods-search" v-model="searchLine">
-                <button class="search-button cart-button btn btn-outline-success me-2" type="button"
-                        @click="FilteredGoods">Искать
-                </button>
-                <button class="cart-button btn btn-outline-success me-2" type="button" @click="showCart">Корзина
+                <search @filter-goods="FilteredGoods" v-model="searchLine"></search>
+                <button class="cart-button btn btn-outline-success me-2" type="button" @click="isVisibleCart = !isVisibleCart">Корзина
                 </button>
             </form>
         </nav>
@@ -25,41 +22,8 @@
 
     <main>
         <div class="container_cart">
-            <div class="goods-list">
-                <div class="card" v-for="(good, index) in filteredGoods">
-                    <img src="../img/default_image_product.png" class="card-img-top" alt="product">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ good.product_name }}</h5>
-                        <p class="card-text">Price: {{ good.price }}</p>
-                        <a class="btn btn-primary" @click="addItem(index)">Add to cart</a>
-                    </div>
-                </div>
-            </div>
-            <div class="shopping_cart" v-show="isVisibleCart">
-                <div class="table_container">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Item</th>
-                            <th scope="col">Price</th>
-                            <th scope="col">Delete</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="(item, index) in cart">
-                            <th scope="row">{{ index + 1 }}</th>
-                            <td>{{ item.product_name }}</td>
-                            <td>{{ item.price }}$</td>
-                            <td>
-                                <button class="del_btn btn-primary" @click="removeItem(index)">Delete</button>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p v-show="totalPrice">Total price: {{ totalPrice }}$</p>
-            </div>
+            <goods-list :goods="filteredGoods" :add-funk="addItem"></goods-list>
+            <basket :is-visible="isVisibleCart" :cart="cart" :total-price="totalPrice" @remove-item="removeItem"></basket>
         </div>
     </main>
 </div>
