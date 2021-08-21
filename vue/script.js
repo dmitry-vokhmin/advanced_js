@@ -1,5 +1,3 @@
-const API_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses';
-
 Vue.component("basket", {
     props: ["isVisible", "cart", "totalPrice"],
     template: `
@@ -67,60 +65,113 @@ Vue.component("goods-item", {
 });
 
 const app = new Vue({
-    el: '#app',
-    data: {
-        cart: [],
-        goods: [],
-        filteredGoods: [],
-        searchLine: '',
-        totalPrice: 0,
-        isVisibleCart: false
-    },
-    methods: {
-        makeGETRequest(url) {
-            return new Promise((resolve, reject) => {
-                let xhr;
+        el: '#app',
+        data: {
+            cart: [],
+            goods: [],
+            filteredGoods: [],
+            searchLine: '',
+            totalPrice: 0,
+            isVisibleCart: false
+        },
+        methods: {
+            makeGETRequest(url) {
+                return new Promise((resolve, reject) => {
+                    let xhr;
 
-                if (window.XMLHttpRequest) {
-                    xhr = new XMLHttpRequest();
-                } else if (window.ActiveXObject) {
-                    xhr = new ActiveXObject("Microsoft.XMLHTTP");
-                }
-
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
-                        resolve(xhr.responseText);
-                    } else if (xhr.readyState === 4 && xhr.status !== 200) {
-                        reject(xhr.status);
+                    if (window.XMLHttpRequest) {
+                        xhr = new XMLHttpRequest();
+                    } else if (window.ActiveXObject) {
+                        xhr = new ActiveXObject("Microsoft.XMLHTTP");
                     }
-                }
 
-                xhr.open('GET', url, true);
-                xhr.send();
-            })
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            resolve(xhr.responseText);
+                        } else if (xhr.readyState === 4 && xhr.status !== 200) {
+                            reject(xhr.status);
+                        }
+                    }
+
+                    xhr.open('GET', url, true);
+                    xhr.send();
+                })
+            },
+            makePOSTRequest(url, data) {
+                return new Promise((resolve, reject) => {
+                    let xhr;
+
+                    if (window.XMLHttpRequest) {
+                        xhr = new XMLHttpRequest();
+                    } else if (window.ActiveXObject) {
+                        xhr = new ActiveXObject("Microsoft.XMLHTTP");
+                    }
+
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            resolve(xhr.responseText);
+                        }
+                    }
+
+                    xhr.open('POST', url, true);
+                    xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                    data = JSON.stringify(data)
+                    xhr.send(data);
+                })
+            },
+            makeDELETERequest(url, data) {
+                return new Promise((resolve, reject) => {
+                    let xhr;
+
+                    if (window.XMLHttpRequest) {
+                        xhr = new XMLHttpRequest();
+                    } else if (window.ActiveXObject) {
+                        xhr = new ActiveXObject("Microsoft.XMLHTTP");
+                    }
+
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            resolve(xhr.responseText);
+                        }
+                    }
+
+                    xhr.open('DELETE', url, true);
+                    xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                    data = JSON.stringify(data)
+                    xhr.send(data);
+                })
+            },
+            FilteredGoods() {
+                const regexp = new RegExp(this.searchLine, 'i');
+                this.filteredGoods = this.goods.filter(good =>
+                    regexp.test(good.product_name));
+            },
+            addItem(item) {
+                this.cart.push(item)
+                this.totalPrice += item.price
+                this.makePOSTRequest(`/addToCart`, item)
+                    .then((resp) => {
+                        console.log(resp)
+                    })
+            },
+            removeItem(index) {
+                this.makeDELETERequest(`/deleteFromCart`, this.cart[index])
+                    .then((resp) => {
+                        console.log(resp)
+                    });
+                this.totalPrice -= this.cart[index].price
+                this.cart = [...this.cart.slice(0, index), ...this.cart.slice(index + 1)];
+            }
         },
-        FilteredGoods() {
-            const regexp = new RegExp(this.searchLine, 'i');
-            this.filteredGoods = this.goods.filter(good =>
-                regexp.test(good.product_name));
-        },
-        addItem(item) {
-            this.cart.push(item)
-            this.totalPrice += item.price
-        },
-        removeItem(index) {
-            this.totalPrice -= this.cart[index].price
-            this.cart = [...this.cart.slice(0, index), ...this.cart.slice(index + 1)];
+        mounted() {
+            this.makeGETRequest(`/catalogData`)
+                .then((goods) => {
+                    this.goods = JSON.parse(goods);
+                    this.filteredGoods = JSON.parse(goods);
+                })
+                .catch((error) => {
+                    console.log(error)
+                });
         }
-    },
-    mounted() {
-        this.makeGETRequest(`${API_URL}/catalogData.json`)
-            .then((goods) => {
-                this.goods = JSON.parse(goods);
-                this.filteredGoods = JSON.parse(goods);
-            })
-            .catch((error) => {
-                console.log(error)
-            });
-    }
-});
+    })
+;
